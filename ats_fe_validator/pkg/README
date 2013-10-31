@@ -1,0 +1,31 @@
+This is a plugin of ATS (Apache Traffic Server).
+
+Should mimic media_fe_validator used to do - http://dist.corp.yahoo.com/by-package/media_fe_validator/
+
+On receiving  request -
+-----------------------------
+Should do the following only in CARP mode (check if CARP header set by ATS carp
+plugin is present)
+1) Strip 'Accept-Encoding' header before forwarding request to Origin Server
+2) Make sure request type is only GET or HEAD. For other request types like
+POST, intercept the call and send back a 400 ( Not sure if we still need this ?)
+
+On receiving FE response
+-----------------------------
+Should do the following if response has not already been processed by another
+FEV plugin (check response header set by FEV plugin is not present) -
+1) Check response status code, content type and response body (more details of
+the checks can be found here -
+http://svn.corp.yahoo.com/view/yahoo/media/common/lib/fe_validator/trunk/src/MediaFeValidator.php?revision=1561183&view=markup#211)
+     a) if invalid - take action (like change status code to 500, make
+     Cache-Control header as private, add X-Response-Code header, send back
+     empty body etc)
+          b) if valid  - let the response pass through
+
+To use this plugin, install this package
+
+For debugging, you can use
+$ /home/y/bin/traffic_server -T fe_validator
+which will show you debugging output for each request.
+
+More details at: http://twiki.corp.yahoo.com/view/Lego/EngNacelle
